@@ -1,53 +1,57 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getMovieDetails } from "../services/api";
+import { getMovieDetails } from "../api/quizApi";
 
-function MovieDetails() {
-  const { id } = useParams(); // Extracts movie ID from the URL
+const MovieDetails = () => {
+  const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchDetails = async () => {
       const data = await getMovieDetails(id);
       setMovie(data);
       setLoading(false);
-    }
-    fetchData();
+    };
+    fetchDetails();
   }, [id]);
 
-  if (loading) return <p className="text-center text-gray-400 mt-10">Loading...</p>;
-  if (!movie) return <p className="text-center text-red-400 mt-10">Movie not found.</p>;
+  if (loading) {
+    return <p className="text-center mt-10">Loading movie details...</p>;
+  }
+
+  if (!movie) {
+    return <p className="text-center mt-10 text-red-500">Movie not found!</p>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
-      <Link to="/" className="text-cyan-400 hover:underline text-sm mb-4 inline-block">
+    <div className="max-w-5xl mx-auto mt-8 bg-white p-6 rounded-lg shadow-md">
+      <Link to="/" className="text-blue-600 hover:underline mb-4 block">
         ← Back to Search
       </Link>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col md:flex-row gap-6">
         <img
-          src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300"}
+          src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/400"}
           alt={movie.Title}
-          className="w-full md:w-1/3 rounded-lg shadow-lg"
+          className="w-full md:w-1/3 rounded-lg shadow"
         />
 
-        <div className="md:w-2/3">
-          <h1 className="text-4xl font-bold text-cyan-400 mb-3">{movie.Title}</h1>
-          <p className="text-gray-400 italic mb-2">{movie.Year} • {movie.Genre}</p>
-          <p className="mb-4 text-gray-300">{movie.Plot}</p>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold mb-2">{movie.Title}</h1>
+          <p className="text-gray-600 mb-4 italic">{movie.Year}</p>
+          <p className="text-gray-800 mb-4">{movie.Plot}</p>
 
-          <div className="space-y-2">
-            <p><span className="font-semibold text-cyan-400">Director:</span> {movie.Director}</p>
-            <p><span className="font-semibold text-cyan-400">Actors:</span> {movie.Actors}</p>
-            <p><span className="font-semibold text-cyan-400">Language:</span> {movie.Language}</p>
-            <p><span className="font-semibold text-cyan-400">Runtime:</span> {movie.Runtime}</p>
-            <p><span className="font-semibold text-cyan-400">IMDB Rating:</span> ⭐ {movie.imdbRating}</p>
+          <div className="space-y-2 text-gray-700">
+            <p><strong>🎭 Genre:</strong> {movie.Genre}</p>
+            <p><strong>🎬 Director:</strong> {movie.Director}</p>
+            <p><strong>⭐ IMDB Rating:</strong> {movie.imdbRating}</p>
+            <p><strong>👥 Actors:</strong> {movie.Actors}</p>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default MovieDetails;
