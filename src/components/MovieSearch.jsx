@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { searchMovies } from "../services/movieApi";
+import { searchMovies } from "../api/quizApi";
+import { Link } from "react-router-dom";
 
 const MovieSearch = () => {
   const [query, setQuery] = useState("");
@@ -9,74 +10,65 @@ const MovieSearch = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-
-    if (!query.trim()) {
-      setError("Please enter a movie title.");
-      return;
-    }
+    if (!query.trim()) return;
 
     setLoading(true);
     setError("");
 
-    try {
-      const results = await searchMovies(query);
-      setMovies(results);
-    } catch (err) {
-      console.error("Search failed:", err);
-      setError("Failed to fetch movies. Try again later.");
-    } finally {
-      setLoading(false);
+    const results = await searchMovies(query);
+    if (results.length === 0) {
+      setError("No movies found for that search.");
     }
+
+    setMovies(results);
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">🎬 Movie Search</h1>
-
-      {/* Search Form */}
-      <form onSubmit={handleSearch} className="flex justify-center mb-8">
-        <input
-          type="text"
-          placeholder="Search for a movie..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="p-2 w-2/3 rounded-l-lg text-gray-900 focus:outline-none"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 px-4 py-2 rounded-r-lg hover:bg-blue-700"
-        >
-          Search
-        </button>
+    <div className="text-center">
+      {/* Search Bar */}
+      <form onSubmit={handleSearch} className="mb-8">
+        <div className="flex justify-center gap-2">
+          <input
+            type="text"
+            placeholder="Search for a movie..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-80 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Search
+          </button>
+        </div>
       </form>
 
-      {/* Loading State */}
-      {loading && <p className="text-center text-gray-400">Loading...</p>}
+      {/* Loading or Error */}
+      {loading && <p>Loading...</p>}
+      {error && <p className="text-red-500 font-medium">{error}</p>}
 
-      {/* Error Message */}
-      {error && <p className="text-center text-red-400">{error}</p>}
-
-      {/* Movie Results */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Movie Results Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-8">
         {movies.map((movie) => (
-          <div key={movie.imdbID} className="bg-gray-800 p-4 rounded-lg">
+          <Link
+            to={`/movie/${movie.imdbID}`}
+            key={movie.imdbID}
+            className="bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden"
+          >
             <img
-              src={movie.Poster !== "N/A" ? movie.Poster : "/no-image.jpg"}
+              src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300"}
               alt={movie.Title}
-              className="w-full h-64 object-cover rounded-lg"
+              className="w-full h-64 object-cover"
             />
-            <h2 className="text-lg font-semibold mt-2">{movie.Title}</h2>
-            <p className="text-sm text-gray-400">{movie.Year}</p>
-          </div>
+            <div className="p-3">
+              <h2 className="text-lg font-semibold truncate">{movie.Title}</h2>
+              <p className="text-gray-600">{movie.Year}</p>
+            </div>
+          </Link>
         ))}
       </div>
-
-      {/* No results */}
-      {!loading && !error && movies.length === 0 && (
-        <p className="text-center text-gray-400 mt-8">
-          Start searching for your favorite movies 🍿
-        </p>
-      )}
     </div>
   );
 };
